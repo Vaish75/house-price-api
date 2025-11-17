@@ -25,7 +25,7 @@ class HouseModel(nn.Module):
 @st.cache_resource
 def load_model():
     model = HouseModel()
-    model.load_state_dict(torch.load("house_model.pt", map_location="cpu"))
+    model.load_state_dict(torch.load("models/house_model.pt", map_location="cpu"))
     model.eval()
     return model
 
