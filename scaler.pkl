@@ -1,4 +1,0 @@
-scaler = StandardScaler()
-y_scaled = scaler.fit_transform(y)
-pickle.dump(scaler, open("scaler.pkl", "wb"))
-
