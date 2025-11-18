@@ -95,7 +95,7 @@ if predict_btn:
     x = torch.tensor([[sqft, bhk]], dtype=torch.float32)
     prediction = model(x).item()
 
-    st.success(f"### 💰 Predicted Price: **₹ {prediction*1000:,.2f}**")
+    st.success(f"### Predicted Price: **₹ {prediction*1000:,.2f}**")
     st.caption("✔️ Model has been successfully trained.")
 
 # Close card
@@ -107,3 +107,4 @@ st.markdown(
     "<p style='text-align:center;'>✨ Built with <b>Streamlit</b> + <b>PyTorch</b></p>",
     unsafe_allow_html=True
 )
+
