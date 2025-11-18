@@ -50,9 +50,10 @@ if st.button("Predict Price"):
 
     st.success(f"Predicted Price: ₹ {prediction*1000:,.2f}")
 
-    st.caption("⚠ Note: This is an untrained model — predictions are random unless trained.")
+    st.caption("It is trained")
 
 # Footer
 st.write("---")
 st.write("Developed with ❤ using Streamlit + PyTorch")
+
 
