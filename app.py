@@ -6,8 +6,8 @@ import torch.nn as nn
 # PyTorch Model Definition
 # -----------------------------
 class HouseModel(nn.Module):
-    def _init_(self):
-        super()._init_()
+    def __init__(self):
+        super().__init__()
         self.net = nn.Sequential(
             nn.Linear(2, 16),
             nn.ReLU(),
@@ -32,28 +32,78 @@ def load_model():
 model = load_model()
 
 # -----------------------------
-# Streamlit UI
+# NEW UI DESIGN
 # -----------------------------
-st.title("🏡 House Price Prediction App (PyTorch Model)")
-st.write("Enter house details to get the predicted price.")
+st.set_page_config(page_title="House Price Predictor", layout="centered")
 
-# Input fields
-sqft = st.number_input("Enter Square Feet:", min_value=500, max_value=5000, value=1000)
-bhk = st.number_input("Enter BHK:", min_value=1, max_value=10, value=2)
+# Sidebar
+with st.sidebar:
+    st.image("https://cdn-icons-png.flaticon.com/512/1046/1046857.png", width=120)
+    st.markdown("### 🏠 House Price Predictor")
+    st.write("Fill the details and get instant prediction.")
 
-# -----------------------------
-# Prediction
-# -----------------------------
-if st.button("Predict Price"):
+    st.info("Model: PyTorch\nVersion: 1.0")
+
+# Header
+st.markdown(
+    """
+    <h1 style='text-align: center; color: #4A90E2;'>
+        🔮 House Price Prediction
+    </h1>
+    <p style='text-align: center; font-size:18px;'>
+        Enter property details and get predicted value instantly.
+    </p>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Card-like container
+st.markdown(
+    """
+    <div style="
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        width: 80%;
+        margin: auto;
+    ">
+    """,
+    unsafe_allow_html=True
+)
+
+# Inputs
+col1, col2 = st.columns(2)
+
+with col1:
+    sqft = st.number_input("📏 Square Feet", min_value=500, max_value=5000, value=1200)
+
+with col2:
+    bhk = st.number_input("🛏️ Number of BHK", min_value=1, max_value=10, value=3)
+
+st.write("")
+st.write("")
+
+# Predict Button
+predict_btn = st.button(
+    "🔍 Predict House Price",
+    use_container_width=True
+)
+
+# Prediction Logic
+if predict_btn:
     x = torch.tensor([[sqft, bhk]], dtype=torch.float32)
     prediction = model(x).item()
 
-    st.success(f"Predicted Price: ₹ {prediction*1000:,.2f}")
+    st.success(f"### 💰 Predicted Price: **₹ {prediction*1000:,.2f}**")
+    st.caption("✔️ Model has been successfully trained.")
 
-    st.caption("It is trained")
+# Close card
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Footer
-st.write("---")
-st.write("Developed with ❤ using Streamlit + PyTorch")
-
-
+st.markdown("<br><hr>", unsafe_allow_html=True)
+st.markdown(
+    "<p style='text-align:center;'>✨ Built with <b>Streamlit</b> + <b>PyTorch</b></p>",
+    unsafe_allow_html=True
+)
