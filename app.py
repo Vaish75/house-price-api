@@ -1,15 +1,13 @@
 import streamlit as st
 import torch
 import torch.nn as nn
-import pickle
-import numpy as np
 
 # -----------------------------
 # PyTorch Model Definition
 # -----------------------------
 class HouseModel(nn.Module):
-    def __init__(self):
-        super().__init__()
+    def _init_(self):
+        super()._init_()
         self.net = nn.Sequential(
             nn.Linear(2, 16),
             nn.ReLU(),
@@ -22,48 +20,38 @@ class HouseModel(nn.Module):
         return self.net(x)
 
 # -----------------------------
-# Load Model + Scaler
+# Load Model
 # -----------------------------
 @st.cache_resource
-def load_model_and_scaler():
-    # Load model
+def load_model():
     model = HouseModel()
     model.load_state_dict(torch.load("house_model.pt", map_location="cpu"))
     model.eval()
+    return model
 
-    # Load scaler saved with pickle
-    with open("scaler.pkl", "rb") as f:
-        scaler = pickle.load(f)
-
-    return model, scaler
-
-model, scaler = load_model_and_scaler()
+model = load_model()
 
 # -----------------------------
 # Streamlit UI
 # -----------------------------
-st.title("🏡 House Price Prediction")
+st.title("🏡 House Price Prediction App (PyTorch Model)")
 st.write("Enter house details to get the predicted price.")
 
-sqft = st.number_input("Enter Square Feet:", min_value=500, max_value=10000, value=1000)
+# Input fields
+sqft = st.number_input("Enter Square Feet:", min_value=500, max_value=5000, value=1000)
 bhk = st.number_input("Enter BHK:", min_value=1, max_value=10, value=2)
 
 # -----------------------------
 # Prediction
 # -----------------------------
 if st.button("Predict Price"):
-    # Create input tensor
     x = torch.tensor([[sqft, bhk]], dtype=torch.float32)
+    prediction = model(x).item()
 
-    # Model output (scaled value)
-    scaled_pred = model(x).item()
+    st.success(f"Predicted Price: ₹ {prediction:,.2f}")
 
-    # Inverse scale to get real rupee price
-    actual_price = scaler.inverse_transform([[scaled_pred]])[0][0]
-
-    st.success(f"Predicted Price: ₹ {actual_price:,.2f}")
-    st.caption("Output is converted back to actual rupees using inverse scaling.")
+    st.caption("⚠ Note: This is an untrained model — predictions are random unless trained.")
 
 # Footer
 st.write("---")
-st.write("Developed using Streamlit + PyTorch")
+st.write("Developed with ❤ using Streamlit + PyTorch")
