@@ -1,6 +1,8 @@
 import streamlit as st
 import torch
 import torch.nn as nn
+import pickle
+import numpy as np
 
 # -----------------------------
 # PyTorch Model Definition
@@ -20,16 +22,22 @@ class HouseModel(nn.Module):
         return self.net(x)
 
 # -----------------------------
-# Load Model
+# Load Model + Scaler
 # -----------------------------
 @st.cache_resource
-def load_model():
+def load_model_and_scaler():
+    # Load trained model
     model = HouseModel()
     model.load_state_dict(torch.load("house_model.pt", map_location="cpu"))
     model.eval()
-    return model
 
-model = load_model()
+    # Load scaler.pkl (target price scaler)
+    with open("scaler.pkl", "rb") as f:
+        scaler = pickle.load(f)
+
+    return model, scaler
+
+model, scaler = load_model_and_scaler()
 
 # -----------------------------
 # Streamlit UI
@@ -56,11 +64,17 @@ bhk = st.number_input(
 # Prediction
 # -----------------------------
 if st.button("Predict Price"):
+    # Convert to tensor
     x = torch.tensor([[sqft, bhk]], dtype=torch.float32)
-    prediction = model(x).item()
 
-    st.success(f"Predicted Price: ₹ {prediction:,.2f}")
-    st.caption("The model is trained.")
+    # Model output (scaled)
+    scaled_pred = model(x).item()
+
+    # Convert back to original price
+    actual_price = scaler.inverse_transform([[scaled_pred]])[0][0]
+
+    st.success(f"Predicted Price: ₹ {actual_price:,.2f}")
+    st.caption("Prediction shown in actual rupees (inverse-scaled).")
 
 # Footer
 st.write("---")
