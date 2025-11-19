@@ -145,15 +145,6 @@ with st.container():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# PRICE CHART
+# FOOTER
 # -----------------------------
-st.markdown("<h3 class='center-text'>📉 BHK Price Trend</h3>", unsafe_allow_html=True)
-
-df = pd.DataFrame({
-    "BHK":[1,2,3,4,5],
-    "Price (₹)": [model(torch.tensor([[sqft, b]], dtype=torch.float32)).item()*1000 for b in [1,2,3,4,5]]
-})
-
-st.line_chart(df, x="BHK", y="Price (₹)")
-
 st.markdown("<p class='footer'>✨ Designed with Love • Streamlit + PyTorch</p>", unsafe_allow_html=True)
