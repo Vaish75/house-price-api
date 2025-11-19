@@ -2,9 +2,9 @@ import streamlit as st
 import torch
 import torch.nn as nn
 
-# -----------------------------
-# PyTorch Model Definition
-# -----------------------------
+# -------------------------------------------------
+# PyTorch Model
+# -------------------------------------------------
 class HouseModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -19,9 +19,9 @@ class HouseModel(nn.Module):
     def forward(self, x):
         return self.net(x)
 
-# -----------------------------
+# -------------------------------------------------
 # Load Model
-# -----------------------------
+# -------------------------------------------------
 @st.cache_resource
 def load_model():
     model = HouseModel()
@@ -31,80 +31,108 @@ def load_model():
 
 model = load_model()
 
-# -----------------------------
-# NEW UI DESIGN
-# -----------------------------
-st.set_page_config(page_title="House Price Predictor", layout="centered")
-
-# Sidebar
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/1046/1046857.png", width=120)
-    st.markdown("### 🏠 House Price Predictor")
-    st.write("Fill the details and get instant prediction.")
-
-    st.info("Model: PyTorch\nVersion: 1.0")
-
-# Header
-st.markdown(
-    """
-    <h1 style='text-align: center; color: #4A90E2;'>
-        🔮 House Price Prediction
-    </h1>
-    <p style='text-align: center; font-size:18px;'>
-        Enter property details and get predicted value instantly.
-    </p>
-    """,
-    unsafe_allow_html=True,
+# -------------------------------------------------
+# PAGE CONFIG
+# -------------------------------------------------
+st.set_page_config(
+    page_title="House Price Predictor",
+    page_icon="🏠",
+    layout="centered"
 )
 
-# Card-like container
-st.markdown(
-    """
-    <div style="
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-        width: 80%;
-        margin: auto;
-    ">
-    """,
-    unsafe_allow_html=True
-)
+# -------------------------------------------------
+# CUSTOM CSS (Complete New Look)
+# -------------------------------------------------
+st.markdown("""
+<style>
 
-# Inputs
+body {
+    background: linear-gradient(135deg, #121212, #1b1b1b);
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.neon-title {
+    text-align: center;
+    font-size: 50px;
+    font-weight: 800;
+    color: #00eaff;
+    text-shadow: 0 0 10px #00eaff, 0 0 20px #00eaff;
+    letter-spacing: 1px;
+}
+
+.sub-text {
+    text-align: center;
+    color: #bbbbbb;
+    font-size: 18px;
+}
+
+.glass-card {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 35px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.1);
+}
+
+.neon-button button {
+    background: linear-gradient(135deg, #00eaff, #007bff) !important;
+    color: black !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+    padding: 10px !important;
+    box-shadow: 0 0 15px #00eaff !important;
+}
+
+input {
+    background: rgba(255,255,255,0.2) !important;
+    color: white !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# -------------------------------------------------
+# HEADER
+# -------------------------------------------------
+st.markdown("<h1 class='neon-title'>🏠 House Price Prediction</h1>", unsafe_allow_html=True)
+st.markdown("<p class='sub-text'>A modern AI-powered price estimator</p>", unsafe_allow_html=True)
+
+st.write("")
+st.write("")
+
+# -------------------------------------------------
+# CARD UI
+# -------------------------------------------------
+st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
 with col1:
-    sqft = st.number_input("📏 Square Feet", min_value=500, max_value=5000, value=1200)
+    sqft = st.number_input("📐 Area (Sq. Feet)", min_value=300, max_value=6000, value=1000)
 
 with col2:
-    bhk = st.number_input("🛏️ Number of BHK", min_value=1, max_value=10, value=3)
+    bhk = st.number_input("🛏 Bedrooms (BHK)", min_value=1, max_value=10, value=2)
 
-st.write("")
 st.write("")
 
 # Predict Button
-predict_btn = st.button(
-    "🔍 Predict House Price",
-    use_container_width=True
-)
+with st.container():
+    pred_btn = st.button("🔮 Predict Price", key="predict", help="Click to estimate price")
 
-# Prediction Logic
-if predict_btn:
+# Prediction
+if pred_btn:
     x = torch.tensor([[sqft, bhk]], dtype=torch.float32)
     prediction = model(x).item()
+    
+    st.success(f"### 💰 Estimated Price: **₹ {prediction*1000:,.2f}**")
+    st.caption("AI Model: PyTorch • Version 1.0")
 
-    st.success(f"### Predicted Price: **₹ {prediction*1000:,.2f}**")
-    st.caption("✔️ Model has been successfully trained.")
-
-# Close card
 st.markdown("</div>", unsafe_allow_html=True)
 
 # Footer
-st.markdown("<br><hr>", unsafe_allow_html=True)
-st.markdown(
-    "<p style='text-align:center;'>✨ Built with <b>Streamlit</b> + <b>PyTorch</b></p>",
-    unsafe_allow_html=True
-)
-
+st.write("")
+st.markdown("<p style='text-align:center; color:#777;'>✨ Designed with Streamlit • Neon UI</p>", unsafe_allow_html=True)
