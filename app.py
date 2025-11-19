@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import time
 
-# --------------------------------------
-# PyTorch Model
-# --------------------------------------
+# -----------------------------
+# MODEL
+# -----------------------------
 class HouseModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -18,7 +18,6 @@ class HouseModel(nn.Module):
             nn.ReLU(),
             nn.Linear(8, 1)
         )
-        
     def forward(self, x):
         return self.net(x)
 
@@ -31,159 +30,130 @@ def load_model():
 
 model = load_model()
 
-# --------------------------------------
+# -----------------------------
 # PAGE CONFIG
-# --------------------------------------
+# -----------------------------
 st.set_page_config(
-    page_title="House Price Predictor",
+    page_title="House Price AI",
     page_icon="🏡",
-    layout="wide"
+    layout="centered"
 )
 
-# --------------------------------------
-# CSS (Light Modern UI)
-# --------------------------------------
+# -----------------------------
+# PREMIUM GLASS UI CSS
+# -----------------------------
 st.markdown("""
 <style>
 
 body {
-    background: #f8f9fb;
+    background: linear-gradient(135deg, #E3F2FF, #F7FCFF);
 }
 
-.header-text {
-    text-align: center;
-    background: linear-gradient(90deg, #4BA3F2, #7BC6FF);
-    -webkit-background-clip: text;
-    color: transparent;
-    font-size: 48px;
-    font-weight: 800;
-    margin-top: -20px;
+h1, h2, h3, h4 {
+    font-family: 'Segoe UI', sans-serif;
 }
 
-.sub-text {
-    text-align: center;
-    font-size: 18px;
-    color: #444;
-}
-
-.card {
-    background: #ffffffcc;
-    padding: 30px;
-    border-radius: 20px;
-    border: 1px solid #e6e6e6;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    backdrop-filter: blur(8px);
+.glass-card {
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 24px;
+    padding: 40px;
+    border: 1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
 .predict-btn button {
-    background: linear-gradient(90deg, #4BA3F2, #7BC6FF) !important;
+    background: linear-gradient(90deg, #2B89FF, #6BC6FF) !important;
     color: white !important;
-    padding: 10px !important;
-    border-radius: 10px !important;
-    font-size: 18px !important;
-    font-weight: bold !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
     border: none !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.footer {
+    text-align:center;
+    color:#666;
+    margin-top:40px;
+    font-size:14px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# --------------------------------------
+# -----------------------------
 # HEADER
-# --------------------------------------
-st.markdown("<h1 class='header-text'>🏡 House Price Prediction</h1>", unsafe_allow_html=True)
-st.markdown("<p class='sub-text'>AI-powered estimation • Instant results • Modern UI</p>", unsafe_allow_html=True)
+# -----------------------------
+st.markdown("""
+<h1 class='center-text' style='font-size:50px; font-weight:800;
+background: linear-gradient(90deg, #2B89FF, #6BC6FF);
+-webkit-background-clip: text;
+color: transparent;'>
+🏡 Smart House Price Estimator
+</h1>
+<p class='center-text' style='font-size:18px; color:#444;'>
+Next-gen AI powered prediction • Smooth & Premium UI
+</p>
+""", unsafe_allow_html=True)
 
 st.write("")
 
-# --------------------------------------
-# SIDEBAR
-# --------------------------------------
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/1046/1046857.png", width=120)
-    st.markdown("### ℹ️ About the App")
-    st.write("Enter property details and get instant price prediction using a PyTorch ML model.")
+# -----------------------------
+# MAIN GLASS CARD
+# -----------------------------
+with st.container():
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 
-    st.markdown("### ⚙️ Model Info")
-    st.info("Model: PyTorch\nVersion: 1.0\nEngine: CPU Optimized")
+    col1, col2 = st.columns(2)
 
-    st.markdown("### 📘 User Guide")
-    st.write("1. Enter square feet\n2. Select BHK\n3. Choose furnishing\n4. Click Predict")
+    with col1:
+        sqft = st.number_input("📏 Area (Sqft)", min_value=300, max_value=6000, value=1200)
+        bhk = st.selectbox("🛏 BHK", [1,2,3,4,5])
 
-# --------------------------------------
-# MAIN CARD
-# --------------------------------------
-st.markdown("<div class='card'>", unsafe_allow_html=True)
+    with col2:
+        furnishing = st.selectbox("🛋 Furnishing", ["Unfurnished","Semi-Furnished","Fully-Furnished"])
+        location = st.selectbox("📍 City", ["Bangalore","Hyderabad","Delhi","Mumbai","Pune","Chennai"])
 
-col1, col2, col3 = st.columns(3)
+    # Factors
+    city_factor = {
+        "Bangalore": 1.20,"Hyderabad": 1.05,"Delhi": 1.30,
+        "Mumbai": 1.45,"Pune": 1.10,"Chennai": 1.15
+    }
 
-with col1:
-    sqft = st.number_input("📏 Square Feet", min_value=400, max_value=6000, value=1200)
+    furnish_factor = {
+        "Unfurnished":1.0,"Semi-Furnished":1.08,"Fully-Furnished":1.15
+    }
 
-with col2:
-    bhk = st.selectbox("🛏 Bedrooms (BHK)", [1, 2, 3, 4, 5])
+    st.write("")
+    predict = st.button("🔮 Predict Price", key="predict-btn")
 
-with col3:
-    furnishing = st.selectbox("🪑 Furnishing", ["Unfurnished", "Semi-Furnished", "Fully-Furnished"])
+    if predict:
+        x = torch.tensor([[sqft, bhk]], dtype=torch.float32)
+        base_price = model(x).item() * 1000
+        final_price = base_price * city_factor[location] * furnish_factor[furnishing]
 
-location = st.selectbox(
-    "📍 Location",
-    ["Bangalore", "Hyderabad", "Delhi", "Mumbai", "Pune", "Chennai"]
-)
+        with st.spinner("✨ Calculating the most accurate price..."):
+            time.sleep(1.2)
 
-# Extra Weight for Furnishing + City boost
-city_factor = {
-    "Bangalore": 1.20,
-    "Hyderabad": 1.05,
-    "Delhi": 1.30,
-    "Mumbai": 1.45,
-    "Pune": 1.10,
-    "Chennai": 1.15
-}
+        st.success(f"### 💰 Estimated Price: **₹ {final_price:,.2f}**")
 
-furnish_factor = {
-    "Unfurnished": 1.0,
-    "Semi-Furnished": 1.08,
-    "Fully-Furnished": 1.15
-}
+    st.markdown("</div>", unsafe_allow_html=True)
 
-st.write("")
+# -----------------------------
+# PRICE CHART
+# -----------------------------
+st.markdown("<h3 class='center-text'>📉 BHK Price Trend</h3>", unsafe_allow_html=True)
 
-# Predict Button
-predict = st.button("🔮 Predict Price", key="predict-btn")
-
-# --------------------------------------
-# PREDICTION LOGIC
-# --------------------------------------
-if predict:
-    x = torch.tensor([[sqft, bhk]], dtype=torch.float32)
-    base_price = model(x).item() * 1000
-    final_price = base_price * city_factor[location] * furnish_factor[furnishing]
-
-    # Animation
-    with st.spinner("Calculating best possible price..."):
-        time.sleep(1.2)
-
-    st.success(f"### 💰 Estimated Price: **₹ {final_price:,.2f}**")
-
-    st.caption("✔️ Adjusted using furnishing & city factors.")
-
-# Close card
-st.markdown("</div>", unsafe_allow_html=True)
-
-st.write("")
-
-# --------------------------------------
-# EXTRA FEATURE — MINI BHK PRICE CHART
-# --------------------------------------
-st.markdown("### 📉 Price Trend by BHK (Based on Your Sqft Input)")
-data = {
-    "BHK": [1, 2, 3, 4, 5],
+df = pd.DataFrame({
+    "BHK":[1,2,3,4,5],
     "Price (₹)": [model(torch.tensor([[sqft, b]], dtype=torch.float32)).item()*1000 for b in [1,2,3,4,5]]
-}
-df = pd.DataFrame(data)
+})
 
 st.line_chart(df, x="BHK", y="Price (₹)")
 
-# FOOTER
-st.markdown("<p style='text-align:center; color:#888;'>✨ Built with Streamlit + PyTorch</p>", unsafe_allow_html=True)
+st.markdown("<p class='footer'>✨ Designed with Love • Streamlit + PyTorch</p>", unsafe_allow_html=True)
